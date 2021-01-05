@@ -1,11 +1,51 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Berserker index page</title>
+    <title>掲示板</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta charset="UTF-8"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $( function() {
+            $("#button1").click(
+                function(){
+                    // 各フィールドから値を取得してJSONデータを作成
+                    let data = {
+                        nickname: $("#nickname").val(),
+                        message: $("#message").val()
+                    };
+                    console.log(data);
+                    // 通信実行
+                    $.ajax({
+                        type:"post",                        // method = "POST"
+                        url:"/api/add",                     // POST送信先のURL
+                        data:JSON.stringify(data),          // JSONデータ本体
+                        contentType: 'application/json',    // リクエストの Content-Type
+                        dataType: "json",                   // レスポンスをJSONとしてパースする
+                        complete: function() {              // 通信が終了した際の処理
+                            location.reload();
+                        }
+                    });
+                });
+        } );
+    </script>
 </head>
 <body>
-<p>Hello, berserker!</p>
+
+<div th:each="post : ${posts}">
+    <p th:text="${post.getPostDatetime()}"></p>
+    <p th:text="${post.getNickname()}"></p>
+    <p th:text="${post.getMessage()}"></p>
+    <br>
+</div>
+
+<form>
+    <p>ニックネーム</p>
+    <input id="nickname" type="text" value=""/>
+    <p>メッセージ</p>
+    <input id="message" type="text" value=""/>
+    <input type="button" id="button1" value="投稿">
+</form>
+
 </body>
 </html>
