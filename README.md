@@ -19,7 +19,7 @@ Gradle + Java11 のプロジェクトを作成し、Dependencies には Spring B
 ``` 
 version: "3.7"
 services:
-  charalarm-db:
+  forum-db:
     image: mysql:8.0.20
     environment:
       MYSQL_ROOT_PASSWORD: password
