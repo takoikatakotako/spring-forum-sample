@@ -79,15 +79,15 @@ spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
 spring.jpa.database=MYSQL
 ```
 
-
-
 [Post.java](https://github.com/takoikatakotako/spring-forum-sample/blob/master/src/main/java/com/swiswiswift/forum/Post.java) を作成します。
-
+`Post` クラスはエンティティクラスと呼ばれるデータの入れ物となるクラスで、データベースのテーブルの一行に対応するように作成します。`Post.java` の `Post` クラスは  `forum.ddl` の `post` テーブルに対応するように作成しています。
 
 [PostRepository.java](https://github.com/takoikatakotako/spring-forum-sample/blob/master/src/main/java/com/swiswiswift/forum/PostRepository.java) を作成します。
+`PostRepository` インターフェースは、DBへのCRUD（登録、読み取り、変更、削除）を自動で実装してくれるインターフェースです。
 
+[PostRequestBean.java](https://github.com/takoikatakotako/spring-forum-sample/blob/master/src/main/java/com/swiswiswift/forum/PostRequestBean.java)を追加します。
 
-`ForumController.java` を追加。
+`ForumController` を作成します
 
 ```
 package com.swiswiswift.forum;
@@ -128,12 +128,6 @@ public class ForumController {
 }
 ```
 
-
-
-[PostRequestBean.java](https://github.com/takoikatakotako/spring-forum-sample/blob/master/src/main/java/com/swiswiswift/forum/PostRequestBean.java)を追加
-
-
-
 投稿一覧を取得
 
 ```
@@ -148,7 +142,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"nickname":"Kabigon", "mes
 ```
 
 
-[index.html](https://github.com/takoikatakotako/spring-forum-sample/blob/master/src/main/resources/templates/index.html) を追加
+[index.html](https://github.com/takoikatakotako/spring-forum-sample/blob/master/src/main/resources/templates/index.html) を追加します。
 
 
 [ForumController.java](https://github.com/takoikatakotako/spring-forum-sample/blob/master/src/main/java/com/swiswiswift/forum/ForumController.java) にエンドポイントを追加。
@@ -165,3 +159,32 @@ public String healthCheck(Model model) {
 
 
 完了！
+
+
+
+### jar ファイルを作成
+
+プロジェクトのルートディレクトリで `./gradlew build` でプロジェクトをビルドします。
+ビルドに成功すると `build/libs/forum-0.0.1-SNAPSHOT.jar` に `jar` ファイルが生成されます。
+`jar` ファイルは単体で動かすことでき、以下のようなコマンドで実行することができます。
+
+```
+java -Duser.timezone=JST -jar forum-0.0.1-SNAPSHOT.jar
+```
+
+このコマンドを実行した状態でブラウザを開き、 `http://localhost:8080/` にアクセスするとアプリケーションが起動していることがわかります。
+このコマンドにはオプションを追加でき、たとえば以下のオプションで 80番ポートでアプリケーションを起動します。
+
+```
+java -Duser.timezone=JST -Dserver.port=80 -jar forum-0.0.1-SNAPSHOT.jar
+```
+
+DBのパスワードなどを上書きできます。
+
+```
+java -Duser.timezone=JST \
+    -jar forum-0.0.1-SNAPSHOT.jar \
+    --spring.datasource.url=jdbc:mysql://127.0.0.1:3306/forum \
+    --spring.datasource.username=root \
+    --spring.datasource.password=password
+```
