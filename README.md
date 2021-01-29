@@ -161,10 +161,9 @@ public String healthCheck(Model model) {
 完了！
 
 
-
 ### jar ファイルを作成
 
-プロジェクトのルートディレクトリで `./gradlew build` でプロジェクトをビルドします。
+プロジェクトのルートディレクトリで `./gradlew build` コマンドを実行し、プロジェクトをビルドします。
 ビルドに成功すると `build/libs/forum-0.0.1-SNAPSHOT.jar` に `jar` ファイルが生成されます。
 `jar` ファイルは単体で動かすことでき、以下のようなコマンドで実行することができます。
 
@@ -188,3 +187,106 @@ java -Duser.timezone=JST \
     --spring.datasource.username=root \
     --spring.datasource.password=password
 ```
+
+
+### jar ファイルで作った SpringBoot と Conoha のDBを接続させる
+
+[Conoha](https://www.conoha.jp/) でデーターベースを借ります。
+
+`n99qs_forum` というデータベースを作成し、そのデーターベースにアクセスできる `n99qs_forum_user` というユーザーを作成します。
+
+![データベースを作成](image/db0.png)
+![データベースを作成](image/db1.png)
+
+借りたデータベースにローカル環境からアクセスします。
+
+```
+mysql --host public.n99qs.tyo1.database-hosting.conoha.io --port 3306 -u n99qs_forum_user -p
+```
+
+データベースを選択します。
+
+```
+use use n99qs_forum;
+```
+
+`post` テーブルを作成します。`forum.ddl` の中身を実行します。
+
+```
+set
+    character_set_client = utf8mb4;
+set
+    character_set_connection = utf8mb4;
+
+create table post(
+    post_id bigint not null auto_increment,
+    nickname varchar(63) not null,
+    message varchar(1023) not null,
+    post_datetime datetime not null,
+    primary key(post_id)
+) engine = InnoDB default charset = utf8mb4 collate = utf8mb4_bin comment '投稿情報';
+```
+
+テーブルを作成したら `jar` ファイルに Conohaのデータベースの情報を入力します。`USER_PASSWORD` には設定した値を入力してください。
+
+```
+java -Duser.timezone=JST \
+    -jar forum-0.0.1-SNAPSHOT.jar \
+    --spring.datasource.url=jdbc:mysql://public.n99qs.tyo1.database-hosting.conoha.io:3306/n99qs_forum \
+    --spring.datasource.username=n99qs_forum_user \
+    --spring.datasource.password=USER_PASSWORD
+```
+
+ブラウザから `localhost:8080` にアクセスして正常にアプリケーションが表示されるはずです。
+
+
+### ConohaVPS に 作ったアプリケーションをデプロイする
+
+次に ConohaVPS にアプリケーションを設定します。
+Conoha で VPS をレンタルします。今回は `Ubuntu` の `20.x` を使用しました。
+サーバーを立ち上げてしばらくしたらログインします。
+`118.27.108.173` は今回借りたサーバーのIPアドレスです。
+
+```
+ssh root@118.27.108.173
+```
+
+ログインに成功したらアップデートを行います。
+
+```
+apt-get -y update
+apt-get -y upgrade
+```
+
+`Java` をインストールします。
+
+```
+apt install openjdk-11-jre-headless
+java --version
+```
+
+インストールが完了したら一度サーバーからログアウトし、scp コマンドで `jar` ファイルをサーバーに転送します。
+
+```
+scp forum-0.0.1-SNAPSHOT.jar root@118.27.108.173:/opt
+```
+
+転送したサーバーに再度ログインし、アプリケーションを80番ポートで立ち上げます。
+
+```
+java -Duser.timezone=JST \
+     -Dserver.port=80 \
+     -jar forum-0.0.1-SNAPSHOT.jar \
+     --spring.datasource.url=jdbc:mysql://public.n99qs.tyo1.database-hosting.conoha.io:3306/n99qs_forum \
+     --spring.datasource.username=n99qs_forum_user \
+     --spring.datasource.password=123SDF234sd
+```
+
+アプリケーションをバックグラウンドで動かします。
+
+```
+command + z
+bg 1
+```
+
+ブラウザにIPアドレスを入力し、アプリケーションが表示されるはずです。
